@@ -8,6 +8,7 @@ const items = [
   { href: "/chat", label: "Chat Thread" },
   { href: "/scheduling", label: "Scheduling" },
   { href: "/process-path", label: "Process Path" },
+  { href: "/database", label: "Database" },
 ];
 
 export function Sidebar() {

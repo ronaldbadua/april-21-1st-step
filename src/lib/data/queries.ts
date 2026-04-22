@@ -1,6 +1,9 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { listDatabaseEntries, type DatabaseEntryRow } from "@/lib/services/database-entries";
 import type { AssignmentRole, HourlyNoteStatus, ProcessStage, ShiftType } from "@/lib/supabase/database.types";
 import { monthBounds, monthDays } from "@/lib/week";
+
+export type { DatabaseEntryRow };
 
 export type AssociateRow = {
   id: string;
@@ -66,6 +69,18 @@ export async function getChatMessages(limit = 200) {
     return { messages: [] as { id: string; body: string; author_name: string; created_at: string }[], error: error.message };
   }
   return { messages: (data ?? []) as { id: string; body: string; author_name: string; created_at: string }[], error: null };
+}
+
+export async function getDatabaseEntries() {
+  const supabase = await createServerSupabaseClient();
+  if (!supabase) {
+    return { entries: [] as DatabaseEntryRow[], error: "missing_config" as const };
+  }
+  const { data, error } = await listDatabaseEntries(supabase);
+  if (error) {
+    return { entries: [] as DatabaseEntryRow[], error };
+  }
+  return { entries: data, error: null };
 }
 
 export async function getProcessPathItems() {

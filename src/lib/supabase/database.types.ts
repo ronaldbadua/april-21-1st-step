@@ -71,6 +71,36 @@ export interface Database {
         };
         Relationships: [];
       };
+      database_entries: {
+        Row: {
+          id: string;
+          label: string;
+          notes: string;
+          data: Json;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          label?: string;
+          notes?: string;
+          data?: Json;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          label?: string;
+          notes?: string;
+          data?: Json;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+        };
+        Relationships: [];
+      };
       schedule_events: {
         Row: {
           id: string;
