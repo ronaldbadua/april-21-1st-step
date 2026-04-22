@@ -8,6 +8,8 @@ export type Json =
 
 export type HourlyNoteStatus = "resolved" | "pending" | "needs_attention";
 export type ProcessStage = "pending" | "in_progress" | "done";
+export type ShiftType = "FHD" | "BHD" | "Part Time" | "Vacation";
+export type AssignmentRole = "main" | "pooling" | "backup";
 
 export interface Database {
   public: {
@@ -96,6 +98,96 @@ export interface Database {
           title?: string;
           notes?: string;
           created_at?: string;
+        };
+        Relationships: [];
+      };
+      associates: {
+        Row: {
+          id: string;
+          name: string;
+          shift_type: ShiftType;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          shift_type: ShiftType;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          shift_type?: ShiftType;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      pooling_rules: {
+        Row: {
+          id: string;
+          associate_id: string;
+          allow_sun_wed_band: boolean;
+          allow_wed_sat_band: boolean;
+          allow_weekend_part_time: boolean;
+          is_ineligible: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          associate_id: string;
+          allow_sun_wed_band?: boolean;
+          allow_wed_sat_band?: boolean;
+          allow_weekend_part_time?: boolean;
+          is_ineligible?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          associate_id?: string;
+          allow_sun_wed_band?: boolean;
+          allow_wed_sat_band?: boolean;
+          allow_weekend_part_time?: boolean;
+          is_ineligible?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      monthly_assignments: {
+        Row: {
+          id: string;
+          assignment_date: string;
+          role: AssignmentRole;
+          slot_type: ShiftType;
+          associate_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          assignment_date: string;
+          role: AssignmentRole;
+          slot_type: ShiftType;
+          associate_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          assignment_date?: string;
+          role?: AssignmentRole;
+          slot_type?: ShiftType;
+          associate_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };

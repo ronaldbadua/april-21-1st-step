@@ -1,28 +1,38 @@
 import { PageHero } from "@/components/dashboard/page-hero";
-import { defaultWeekParam, SchedulingPanel } from "@/components/dashboard/scheduling-panel";
-import { getScheduleEvents, isSupabaseConfigured } from "@/lib/data/queries";
+import { ShiftManagerPanel } from "@/components/dashboard/shift-manager-panel";
+import { ensurePoolingRulesForAssociates } from "@/app/actions/scheduling";
+import { getSchedulingData, isSupabaseConfigured } from "@/lib/data/queries";
+import { defaultYmParam } from "@/lib/week";
 
-function isYmd(s: string) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(s);
+function isYm(s: string) {
+  return /^\d{4}-\d{2}$/.test(s);
 }
 
 export default async function SchedulingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ week?: string }>;
+  searchParams: Promise<{ month?: string }>;
 }) {
   const sp = await searchParams;
-  const week = sp.week && isYmd(sp.week) ? sp.week : defaultWeekParam();
-  const { events, error } = await getScheduleEvents(week);
+  const ym = sp.month && isYm(sp.month) ? sp.month : defaultYmParam();
   const hasConfig = isSupabaseConfigured();
+
+  if (hasConfig) {
+    await ensurePoolingRulesForAssociates();
+  }
+
+  const { associates, rules, assignments, monthDays, error } = await getSchedulingData(ym);
 
   return (
     <>
-      <PageHero kicker="Shifts, touchpoints, and follow-ups" title="ICQA Dashboard" pill="Scheduling" />
-      <SchedulingPanel
-        key={week}
-        weekStartYmd={week}
-        events={events}
+      <PageHero kicker="Shift operations" title="ShiftManager Operations Dashboard" pill="Scheduling" />
+      <ShiftManagerPanel
+        key={ym}
+        ym={ym}
+        associates={associates}
+        rules={rules}
+        assignments={assignments}
+        monthDays={monthDays}
         hasSupabase={hasConfig && error !== "missing_config"}
         queryError={error && error !== "missing_config" ? error : null}
       />

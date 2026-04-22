@@ -1,5 +1,36 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { HourlyNoteStatus, ProcessStage } from "@/lib/supabase/database.types";
+import type { AssignmentRole, HourlyNoteStatus, ProcessStage, ShiftType } from "@/lib/supabase/database.types";
+import { monthBounds, monthDays } from "@/lib/week";
+
+export type AssociateRow = {
+  id: string;
+  name: string;
+  shift_type: ShiftType;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PoolingRuleRow = {
+  id: string;
+  associate_id: string;
+  allow_sun_wed_band: boolean;
+  allow_wed_sat_band: boolean;
+  allow_weekend_part_time: boolean;
+  is_ineligible: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MonthlyAssignmentRow = {
+  id: string;
+  assignment_date: string;
+  role: AssignmentRole;
+  slot_type: ShiftType;
+  associate_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
 
 export function isSupabaseConfigured() {
   return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
@@ -37,47 +68,6 @@ export async function getChatMessages(limit = 200) {
   return { messages: (data ?? []) as { id: string; body: string; author_name: string; created_at: string }[], error: null };
 }
 
-export async function getScheduleEvents(weekStart: string) {
-  const supabase = await createServerSupabaseClient();
-  if (!supabase) {
-    return { events: [] as ScheduleRow[], error: "missing_config" as const };
-  }
-  const [y, m, d] = weekStart.split("-").map(Number);
-  const startDate = new Date(y, m - 1, d, 0, 0, 0, 0);
-  const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + 6);
-  const endStr = toDateString(endDate);
-
-  const { data, error } = await supabase
-    .from("schedule_events")
-    .select("id, event_date, start_time, end_time, title, notes, created_at")
-    .gte("event_date", weekStart)
-    .lte("event_date", endStr)
-    .order("event_date", { ascending: true })
-    .order("start_time", { ascending: true });
-  if (error) {
-    return { events: [] as ScheduleRow[], error: error.message };
-  }
-  return { events: (data ?? []) as ScheduleRow[], error: null };
-}
-
-export type ScheduleRow = {
-  id: string;
-  event_date: string;
-  start_time: string;
-  end_time: string;
-  title: string;
-  notes: string;
-  created_at: string;
-};
-
-function toDateString(d: Date) {
-  const yy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yy}-${mm}-${dd}`;
-}
-
 export async function getProcessPathItems() {
   const supabase = await createServerSupabaseClient();
   if (!supabase) {
@@ -102,3 +92,46 @@ export type ProcessRow = {
   created_at: string;
   updated_at: string;
 };
+
+export async function getSchedulingData(ym: string) {
+  const supabase = await createServerSupabaseClient();
+  if (!supabase) {
+    return {
+      associates: [] as AssociateRow[],
+      rules: [] as PoolingRuleRow[],
+      assignments: [] as MonthlyAssignmentRow[],
+      monthDays: monthDays(ym),
+      error: "missing_config" as const,
+    };
+  }
+
+  const { start, end } = monthBounds(ym);
+  const [associatesRes, rulesRes, assignmentsRes] = await Promise.all([
+    supabase.from("associates").select("id, name, shift_type, is_active, created_at, updated_at").order("name", { ascending: true }),
+    supabase.from("pooling_rules").select("id, associate_id, allow_sun_wed_band, allow_wed_sat_band, allow_weekend_part_time, is_ineligible, created_at, updated_at"),
+    supabase
+      .from("monthly_assignments")
+      .select("id, assignment_date, role, slot_type, associate_id, created_at, updated_at")
+      .gte("assignment_date", start)
+      .lte("assignment_date", end),
+  ]);
+
+  const error = associatesRes.error ?? rulesRes.error ?? assignmentsRes.error;
+  if (error) {
+    return {
+      associates: [] as AssociateRow[],
+      rules: [] as PoolingRuleRow[],
+      assignments: [] as MonthlyAssignmentRow[],
+      monthDays: monthDays(ym),
+      error: error.message,
+    };
+  }
+
+  return {
+    associates: (associatesRes.data ?? []) as AssociateRow[],
+    rules: (rulesRes.data ?? []) as PoolingRuleRow[],
+    assignments: (assignmentsRes.data ?? []) as MonthlyAssignmentRow[],
+    monthDays: monthDays(ym),
+    error: null,
+  };
+}
