@@ -1,0 +1,67 @@
+{
+  "kind": "icqa_policy_reference",
+  "version": 1,
+  "description": "Prepared for the Database workspace `data` field. Paste the whole object into the JSON `data` textarea, or use via API. Add more objects to `items` later; keep top level as a single object (not a raw array).",
+  "items": [
+    {
+      "section": "ICQA Process Overview",
+      "title": "Core Mission and Functions",
+      "content": "ICQA (Inventory Control and Quality Assurance) executes count processes as an audit mechanism to identify and correct inventory defects. Responsibilities include inventory management programs, defect reduction, reporting, and process improvement.",
+      "tags": ["ICQA", "Inventory", "Audit"]
+    },
+    {
+      "section": "ICQA Process Overview",
+      "title": "Why Counting Matters",
+      "content": "Counting ensures inventory accuracy, improves quality, supports operational planning, mitigates risks, and ensures SOX compliance.",
+      "tags": ["Counting", "Accuracy", "SOX"]
+    },
+    {
+      "section": "Count Types",
+      "title": "Simple Bin Count (SBC)",
+      "content": "Counts all items in a tote. Lowest priority. Used to identify quantity defects. Does not update inventory records.",
+      "tags": ["SBC", "Count"]
+    },
+    {
+      "section": "Count Types",
+      "title": "Cycle Count (CC)",
+      "content": "Scans every item and ASIN. Medium priority. Can update inventory. Requires agreement between two associates.",
+      "tags": ["CC", "Inventory"]
+    },
+    {
+      "section": "Count Types",
+      "title": "Inventory Record Defect Rate (IRDR)",
+      "content": "Measures accuracy between physical and virtual inventory. Target is ≤15,000 DPMO.",
+      "tags": ["IRDR", "Quality"]
+    },
+    {
+      "section": "Metrics",
+      "title": "DIPCH",
+      "content": "Defects Identified Per Count Hour. Measures effectiveness of SBC in identifying defects.",
+      "tags": ["Metrics"]
+    },
+    {
+      "section": "Metrics",
+      "title": "RCPCH",
+      "content": "Records Cleaned Per Count Hour. Measures how effective count hours are at cleaning defects.",
+      "tags": ["Metrics"]
+    },
+    {
+      "section": "Compliance",
+      "title": "SOX Compliance",
+      "content": "Ensures accurate financial reporting and requires strict auditing of inventory adjustments.",
+      "tags": ["SOX", "Audit"]
+    },
+    {
+      "section": "Tools",
+      "title": "TOAD System",
+      "content": "AI-based system that predicts which bins are likely to contain defects to improve counting efficiency.",
+      "tags": ["AI", "TOAD"]
+    },
+    {
+      "section": "Tools",
+      "title": "Stoat Model",
+      "content": "Machine learning model that powers TOAD by analyzing bin-level inventory data.",
+      "tags": ["AI", "Stoat"]
+    }
+  ]
+}
