@@ -17,10 +17,13 @@ export type AssociateRow = {
 export type PoolingRuleRow = {
   id: string;
   associate_id: string;
-  allow_sun_wed_band: boolean;
-  allow_wed_sat_band: boolean;
-  allow_weekend_part_time: boolean;
-  is_ineligible: boolean;
+  allow_sunday: boolean;
+  allow_monday: boolean;
+  allow_tuesday: boolean;
+  allow_wednesday: boolean;
+  allow_thursday: boolean;
+  allow_friday: boolean;
+  allow_saturday: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -123,7 +126,11 @@ export async function getSchedulingData(ym: string) {
   const { start, end } = monthBounds(ym);
   const [associatesRes, rulesRes, assignmentsRes] = await Promise.all([
     supabase.from("associates").select("id, name, shift_type, is_active, created_at, updated_at").order("name", { ascending: true }),
-    supabase.from("pooling_rules").select("id, associate_id, allow_sun_wed_band, allow_wed_sat_band, allow_weekend_part_time, is_ineligible, created_at, updated_at"),
+    supabase
+      .from("pooling_rules")
+      .select(
+        "id, associate_id, allow_sunday, allow_monday, allow_tuesday, allow_wednesday, allow_thursday, allow_friday, allow_saturday, created_at, updated_at"
+      ),
     supabase
       .from("monthly_assignments")
       .select("id, assignment_date, role, slot_type, associate_id, created_at, updated_at")

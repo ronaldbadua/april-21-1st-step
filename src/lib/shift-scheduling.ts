@@ -7,10 +7,13 @@ export type AssociateLike = { id: string; shift_type: ShiftType; is_active: bool
 
 export type PoolingRuleLike = {
   associate_id: string;
-  allow_sun_wed_band: boolean;
-  allow_wed_sat_band: boolean;
-  allow_weekend_part_time: boolean;
-  is_ineligible: boolean;
+  allow_sunday: boolean;
+  allow_monday: boolean;
+  allow_tuesday: boolean;
+  allow_wednesday: boolean;
+  allow_thursday: boolean;
+  allow_friday: boolean;
+  allow_saturday: boolean;
 };
 
 /**
@@ -39,7 +42,7 @@ export function canAssignShift(associateShift: ShiftType, slotType: ShiftType, w
   return associateShift === slotType;
 }
 
-/** Pooling tab: same shift rules plus band flags (mirrors your Pooling Rules screen). */
+/** Pooling eligibility requires active associate, matching shift type, and day availability flag. */
 export function canAssignPooling(
   associate: AssociateLike,
   rule: PoolingRuleLike | undefined,
@@ -48,11 +51,14 @@ export function canAssignPooling(
 ): boolean {
   if (!associate.is_active) return false;
   if (!canAssignShift(associate.shift_type, slotType, weekday)) return false;
-  if (rule?.is_ineligible) return false;
   if (!rule) return false;
-  if (slotType === "Part Time") return rule.allow_weekend_part_time;
-  if (weekday <= 3) return rule.allow_sun_wed_band;
-  return rule.allow_wed_sat_band;
+  if (weekday === 0) return rule.allow_sunday;
+  if (weekday === 1) return rule.allow_monday;
+  if (weekday === 2) return rule.allow_tuesday;
+  if (weekday === 3) return rule.allow_wednesday;
+  if (weekday === 4) return rule.allow_thursday;
+  if (weekday === 5) return rule.allow_friday;
+  return rule.allow_saturday;
 }
 
 export function labelForAssociate(a: AssociateLike | undefined, name: string) {

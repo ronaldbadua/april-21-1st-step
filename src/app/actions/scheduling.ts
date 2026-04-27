@@ -62,10 +62,13 @@ export async function deleteAssociate(id: string): Promise<ActionResult> {
 
 export async function upsertPoolingRule(data: {
   associate_id: string;
-  allow_sun_wed_band: boolean;
-  allow_wed_sat_band: boolean;
-  allow_weekend_part_time: boolean;
-  is_ineligible: boolean;
+  allow_sunday: boolean;
+  allow_monday: boolean;
+  allow_tuesday: boolean;
+  allow_wednesday: boolean;
+  allow_thursday: boolean;
+  allow_friday: boolean;
+  allow_saturday: boolean;
 }): Promise<ActionResult> {
   const supabase = await createServerSupabaseClient();
   if (!supabase) return { ok: false, error: "Supabase is not configured on the server." };
@@ -163,7 +166,11 @@ export async function autoAssignMonthly(
   const [{ data: associates, error: assocErr }, { data: rules, error: ruleErr }, { data: existing, error: existingErr }] =
     await Promise.all([
       supabase.from("associates").select("id, name, shift_type, is_active").eq("is_active", true),
-      supabase.from("pooling_rules").select("associate_id, allow_sun_wed_band, allow_wed_sat_band, allow_weekend_part_time, is_ineligible"),
+      supabase
+        .from("pooling_rules")
+        .select(
+          "associate_id, allow_sunday, allow_monday, allow_tuesday, allow_wednesday, allow_thursday, allow_friday, allow_saturday"
+        ),
       supabase.from("monthly_assignments").select("id").gte("assignment_date", start).lte("assignment_date", end).limit(1),
     ]);
 

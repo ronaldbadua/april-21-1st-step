@@ -25,6 +25,7 @@ import { ConfigBanner } from "@/components/dashboard/config-banner";
 import { FormLabel } from "@/components/dashboard/status-pill";
 
 type TabId = "shift" | "associates" | "pooling" | "backup";
+const POOLING_SHIFT_TYPES: ShiftType[] = ["FHD", "BHD", "Part Time"];
 
 function buildWeeks(days: { date: string; weekday: number; label: string }[]) {
   if (!days.length) return [] as ({ date: string; weekday: number; label: string } | null)[][];
@@ -550,7 +551,7 @@ export function ShiftManagerPanel({
           <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm">
             <div className="border-b border-slate-200/80 px-4 py-3">
               <h3 className="text-sm font-bold text-slate-900">Pooling rules</h3>
-              <p className="text-xs text-slate-500">Band flags control which weekdays this associate can take POOLING slots.</p>
+              <p className="text-xs text-slate-500">Set shift type and available workdays for pooling assignments.</p>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
@@ -558,10 +559,13 @@ export function ShiftManagerPanel({
                   <tr>
                     <th className="px-4 py-2">Associate</th>
                     <th className="px-4 py-2">Shift type</th>
-                    <th className="px-4 py-2">Sun–Wed band</th>
-                    <th className="px-4 py-2">Wed–Sat band</th>
-                    <th className="px-4 py-2">Weekend PT</th>
-                    <th className="px-4 py-2">Skip / ineligible</th>
+                    <th className="px-4 py-2">Sunday</th>
+                    <th className="px-4 py-2">Monday</th>
+                    <th className="px-4 py-2">Tuesday</th>
+                    <th className="px-4 py-2">Wednesday</th>
+                    <th className="px-4 py-2">Thursday</th>
+                    <th className="px-4 py-2">Friday</th>
+                    <th className="px-4 py-2">Saturday</th>
                     <th className="px-4 py-2" />
                   </tr>
                 </thead>
@@ -571,18 +575,35 @@ export function ShiftManagerPanel({
                     return (
                       <tr key={a.id}>
                         <td className="px-4 py-2 font-medium text-slate-800">{a.name}</td>
-                        <td className="px-4 py-2 text-slate-600">{a.shift_type}</td>
                         <td className="px-4 py-2">
-                          <input type="checkbox" defaultChecked={r?.allow_sun_wed_band} id={`sw-${a.id}`} />
+                          <select id={`pool-shift-${a.id}`} defaultValue={a.shift_type} className="rounded border border-slate-200 px-2 py-1">
+                            {POOLING_SHIFT_TYPES.map((s) => (
+                              <option key={s} value={s}>
+                                {s}
+                              </option>
+                            ))}
+                          </select>
                         </td>
                         <td className="px-4 py-2">
-                          <input type="checkbox" defaultChecked={r?.allow_wed_sat_band} id={`ws-${a.id}`} />
+                          <input type="checkbox" defaultChecked={r?.allow_sunday} id={`sun-${a.id}`} />
                         </td>
                         <td className="px-4 py-2">
-                          <input type="checkbox" defaultChecked={r?.allow_weekend_part_time} id={`we-${a.id}`} />
+                          <input type="checkbox" defaultChecked={r?.allow_monday} id={`mon-${a.id}`} />
                         </td>
                         <td className="px-4 py-2">
-                          <input type="checkbox" defaultChecked={r?.is_ineligible} id={`skip-${a.id}`} />
+                          <input type="checkbox" defaultChecked={r?.allow_tuesday} id={`tue-${a.id}`} />
+                        </td>
+                        <td className="px-4 py-2">
+                          <input type="checkbox" defaultChecked={r?.allow_wednesday} id={`wed-${a.id}`} />
+                        </td>
+                        <td className="px-4 py-2">
+                          <input type="checkbox" defaultChecked={r?.allow_thursday} id={`thu-${a.id}`} />
+                        </td>
+                        <td className="px-4 py-2">
+                          <input type="checkbox" defaultChecked={r?.allow_friday} id={`fri-${a.id}`} />
+                        </td>
+                        <td className="px-4 py-2">
+                          <input type="checkbox" defaultChecked={r?.allow_saturday} id={`sat-${a.id}`} />
                         </td>
                         <td className="px-4 py-2 text-right">
                           <button
@@ -592,12 +613,26 @@ export function ShiftManagerPanel({
                             onClick={() => {
                               setError(null);
                               startTransition(async () => {
+                                const shift_type = (document.getElementById(`pool-shift-${a.id}`) as HTMLSelectElement).value as ShiftType;
+                                const associateUpdate = await updateAssociate({
+                                  id: a.id,
+                                  name: a.name,
+                                  shift_type,
+                                  is_active: a.is_active,
+                                });
+                                if (!associateUpdate.ok) {
+                                  setError(associateUpdate.error);
+                                  return;
+                                }
                                 const res = await upsertPoolingRule({
                                   associate_id: a.id,
-                                  allow_sun_wed_band: (document.getElementById(`sw-${a.id}`) as HTMLInputElement).checked,
-                                  allow_wed_sat_band: (document.getElementById(`ws-${a.id}`) as HTMLInputElement).checked,
-                                  allow_weekend_part_time: (document.getElementById(`we-${a.id}`) as HTMLInputElement).checked,
-                                  is_ineligible: (document.getElementById(`skip-${a.id}`) as HTMLInputElement).checked,
+                                  allow_sunday: (document.getElementById(`sun-${a.id}`) as HTMLInputElement).checked,
+                                  allow_monday: (document.getElementById(`mon-${a.id}`) as HTMLInputElement).checked,
+                                  allow_tuesday: (document.getElementById(`tue-${a.id}`) as HTMLInputElement).checked,
+                                  allow_wednesday: (document.getElementById(`wed-${a.id}`) as HTMLInputElement).checked,
+                                  allow_thursday: (document.getElementById(`thu-${a.id}`) as HTMLInputElement).checked,
+                                  allow_friday: (document.getElementById(`fri-${a.id}`) as HTMLInputElement).checked,
+                                  allow_saturday: (document.getElementById(`sat-${a.id}`) as HTMLInputElement).checked,
                                 });
                                 if (!res.ok) setError(res.error);
                                 else router.refresh();
